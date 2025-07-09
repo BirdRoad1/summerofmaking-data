@@ -15,12 +15,18 @@ datasource db {
 }
 
 model Project {
-  id     Int    @id @default(autoincrement())
-  name   String
-  author String
-  url    String @unique
-  imageUrl String
-  description String
+  id           Int    @id @default(autoincrement())
+  name         String
+  author       String
+  url          String @unique
+  imageUrl     String
+  description  String
   minutesSpent Int
   devlogsCount Int
+}
+
+model ScrapedPage {
+  id           Int      @id @default(autoincrement())
+  page_number  Int
+  last_scraped DateTime @default(now())
 }

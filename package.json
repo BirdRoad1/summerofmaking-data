@@ -5,8 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx --watch src/index.ts"
+    "build": "rm -rf dist/ && tsc && cp -r package.json prisma/ web/ src/.generated dist/",
+    "dev": "tsx --watch src/index.ts",
+    "package": "tar -czvf dist.tar.gz dist/"
   },
   "author": "jluims",
   "license": "MIT",
