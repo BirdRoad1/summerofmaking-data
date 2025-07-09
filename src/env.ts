@@ -1,4 +1,4 @@
-import { envSchema } from "./schema/env-schema";
+import { envSchema } from "./schema/env-schema.js";
 
 try {
   await import("dotenv/config");

@@ -1,7 +1,7 @@
 import express from "express";
-import { db } from "../db";
-import { ScraperRouter } from "./scraper";
-import { imageCache } from "../img-cache";
+import { db } from "../db.js";
+import { ScraperRouter } from "./scraper.js";
+import { imageCache } from "../img-cache.js";
 
 export const APIRouter = express.Router();
 

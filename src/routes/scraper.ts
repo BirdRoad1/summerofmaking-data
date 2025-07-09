@@ -1,6 +1,6 @@
 import express from "express";
-import { scraper } from "../scraper";
-import { env } from "../env";
+import { scraper } from "../scraper.js";
+import { env } from "../env.js";
 
 export const ScraperRouter = express.Router();
 
@@ -15,10 +15,6 @@ ScraperRouter.use((req, res, next) => {
 
 ScraperRouter.post("/request", async (req, res) => {
   const result = scraper.requestScrape();
-
-  if (!result) {
-    res.status(409);
-  }
 
   return res.json({
     status: result,

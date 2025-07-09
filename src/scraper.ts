@@ -1,6 +1,6 @@
 import { parse as parseHTML } from "node-html-parser";
-import { db } from "./db";
-import { env } from "./env";
+import { db } from "./db.js";
+import { env } from "./env.js";
 const cookie = env.SOC_COOKIE;
 
 function request(url: string, options?: RequestInit) {
@@ -32,7 +32,7 @@ async function scrape(page: number) {
   const abortController = new AbortController();
   let timeout = setTimeout(() => {
     abortController.abort("timed out");
-  }, 10000);
+  }, 20000);
 
   let res;
   try {
@@ -131,14 +131,38 @@ async function scrape(page: number) {
 }
 
 async function startScraping() {
-  let page = 200;
+  const lastPageScraped = await db.scrapedPage.findFirst({
+    orderBy: {
+      page_number: "desc",
+    },
+    take: 1,
+  });
+
+  let page =
+    lastPageScraped?.page_number !== undefined
+      ? lastPageScraped.page_number + 1
+      : 1;
   let added = await scrape(page);
-  while (added > 0) {
+  while (added >= 20) {
     console.log(`Scraped ${added} projects.`);
     ++page;
 
     console.log(`Scraping page ${page}`);
-    added = await scrape(page);
+    if (
+      (await db.scrapedPage.count({
+        where: {
+          page_number: page,
+        },
+      })) === 0
+    ) {
+      added = await scrape(page);
+
+      await db.scrapedPage.create({
+        data: {
+          page_number: page,
+        },
+      });
+    }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
