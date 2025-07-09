@@ -4,3 +4,4 @@ node_modules
 
 src/.generated
 img_cache/
+dist/

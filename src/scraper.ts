@@ -32,7 +32,7 @@ async function scrape(page: number) {
   const abortController = new AbortController();
   let timeout = setTimeout(() => {
     abortController.abort("timed out");
-  }, 3000);
+  }, 10000);
 
   let res;
   try {
@@ -139,7 +139,7 @@ async function startScraping() {
 
     console.log(`Scraping page ${page}`);
     added = await scrape(page);
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
 
