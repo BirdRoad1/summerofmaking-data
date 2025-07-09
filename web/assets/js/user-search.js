@@ -39,7 +39,12 @@ function createUserElem(user, index) {
   rightElem.appendChild(nameElem);
 
   const authorElem = document.createElement("p");
-  authorElem.textContent = `${user.minutesSpent} mins • ${user.devlogsCount} devlogs`;
+  const coins = Math.floor((user.minutesSpent / 60) * 10);
+  authorElem.textContent = `${user.minutesSpent} mins • ${
+    user.devlogsCount
+  } devlogs • est. ${coins} coins • $${Math.floor(coins * 0.03 * 100) / 100}-$${
+    Math.floor(coins * 0.29 * 100) / 100
+  }`;
   rightElem.appendChild(authorElem);
 
   userDiv.appendChild(rightElem);
@@ -89,7 +94,10 @@ async function updateProjects() {
 
   usersCountElem.textContent = users.length;
   projectsCountElem.textContent = projects.length;
-  hoursCountElem.textContent = Math.floor(projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60 * 100) / 100;
+  hoursCountElem.textContent =
+    Math.floor(
+      (projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60) * 100
+    ) / 100;
 
   if (name) {
     users = users.filter((u) =>

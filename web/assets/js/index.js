@@ -72,10 +72,16 @@ function createProjectElem(project) {
   authorLinkElem.textContent = project.author;
 
   const authorElem = document.createElement("p");
+  const coins = Math.floor((project.minutesSpent / 60) * 10);
+
   authorElem.append(
     "by ",
     authorLinkElem,
-    ` • ${project.minutesSpent} mins • ${project.devlogsCount} devlogs`
+    ` • ${project.minutesSpent} mins • ${
+      project.devlogsCount
+    } devlogs • est. ${coins} coins • $${
+      Math.floor(coins * 0.03 * 100) / 100
+    }-$${Math.floor(coins * 0.29 * 100) / 100}`
   );
   rightElem.appendChild(authorElem);
 
@@ -120,7 +126,10 @@ async function updateProjects() {
     }
   }
   usersCountElem.textContent = usersCount;
-  hoursCountElem.textContent = Math.floor(projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60 * 100) / 100;
+  hoursCountElem.textContent =
+    Math.floor(
+      (projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60) * 100
+    ) / 100;
 
   if (author) {
     projects = projects.filter((p) =>
@@ -140,9 +149,10 @@ async function updateProjects() {
     projects.sort((a, b) => b.devlogsCount - a.devlogsCount);
   } else if (sort === "rnd") {
     shuffleArray(projects);
-  } else if (sort === 'url') {
-    projects.sort((a, b) => Number(b.url.split('/')[2]) - Number(a.url.split('/')[2]));
-
+  } else if (sort === "url") {
+    projects.sort(
+      (a, b) => Number(b.url.split("/")[2]) - Number(a.url.split("/")[2])
+    );
   }
 
   // Prevent old requests from updating content if they finish later
