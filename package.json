@@ -1,0 +1,28 @@
+{
+  "name": "summerofmaking-data",
+  "version": "1.0.0",
+  "description": "Scrape summer of making data and visualize it!",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch src/index.ts"
+  },
+  "author": "jluims",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^24.0.12",
+    "prisma": "^6.11.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/client": "6.11.1",
+    "express": "^5.1.0",
+    "mime-types": "^3.0.1",
+    "node-html-parser": "^7.0.1"
+  }
+}
