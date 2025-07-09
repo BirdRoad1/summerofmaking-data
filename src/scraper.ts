@@ -107,13 +107,20 @@ async function scrape(page: number) {
       continue;
     }
 
-    if ((await db.project.count({ where: { url } })) > 0) {
-      console.log(`Project ${name} already in db, skipping...`);
-      continue;
-    }
-
-    await db.project.create({
-      data: {
+    await db.project.upsert({
+      where: {
+        url,
+      },
+      create: {
+        name,
+        author: by,
+        description,
+        devlogsCount: Number(devlogs),
+        minutesSpent: mins,
+        url,
+        imageUrl: imgUrl,
+      },
+      update: {
         name,
         author: by,
         description,
@@ -124,7 +131,7 @@ async function scrape(page: number) {
       },
     });
 
-    console.log(`Added ${name} to the database!`);
+    console.log(`Added or updated ${name} to the database!`);
   }
 
   return projects.length;
@@ -134,6 +141,9 @@ async function startScraping() {
   const lastPageScraped = await db.scrapedPage.findFirst({
     orderBy: {
       page_number: "desc",
+    },
+    where: {
+      valid: true,
     },
     take: 1,
   });
@@ -152,6 +162,7 @@ async function startScraping() {
       (await db.scrapedPage.count({
         where: {
           page_number: page,
+          valid: true,
         },
       })) === 0
     ) {

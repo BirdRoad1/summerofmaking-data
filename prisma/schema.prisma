@@ -29,4 +29,5 @@ model ScrapedPage {
   id           Int      @id @default(autoincrement())
   page_number  Int
   last_scraped DateTime @default(now())
+  valid        Boolean  @default(true)
 }
