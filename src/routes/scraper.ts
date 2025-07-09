@@ -34,13 +34,8 @@ ScraperRouter.post("/reset-pages", async (req, res) => {
     return res.status(404).json({ error: "Not found" });
   }
 
-  
-  const result = await db.scrapedPage.updateMany({
-    data: {
-      valid: false,
-    },
-  });
-  
+  const result = await scraper.resetPages();
+
   console.log("[scraper] reset pages succeeded!");
 
   return res.json({

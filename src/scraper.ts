@@ -187,7 +187,16 @@ function getState() {
   return scraping ? "scraping" : "idle";
 }
 
+async function resetPages() {
+  return await db.scrapedPage.updateMany({
+    data: {
+      valid: false,
+    },
+  });
+}
+
 export const scraper = {
   requestScrape,
   getState,
+  resetPages,
 };
