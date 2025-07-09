@@ -106,7 +106,10 @@ async function updateProjects() {
   const sort = sortSelect.value;
   const author = getStrippedName(authorInput.value);
   const name = getStrippedName(nameInput.value);
-  const limit = Number.parseInt(projectLimitOption.value);
+  const limit =
+  projectLimitOption.value === "all"
+      ? Number.POSITIVE_INFINITY
+      : Number.parseInt(projectLimitOption.value);
 
   let projects;
   try {
