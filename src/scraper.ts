@@ -154,6 +154,11 @@ async function requestScrape() {
   return true;
 }
 
+function getState() {
+  return scraping ? "scraping" : "idle";
+}
+
 export const scraper = {
   requestScrape,
+  getState,
 };

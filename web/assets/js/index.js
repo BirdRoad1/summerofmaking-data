@@ -1,0 +1,165 @@
+import { API } from "./api.js";
+
+const projectsDiv = document.getElementById("projects");
+const noProjectsText = document.getElementById("no-projects");
+const sortSelect = document.getElementById("project-sort");
+const authorInput = document.getElementById("author-input");
+const nameInput = document.getElementById("name-input");
+const projectLimitOption = document.getElementById("project-limit");
+const requestUpdateBtn = document.getElementById("request-update-btn");
+
+function clearProjects() {
+  projectsDiv.replaceChildren();
+  noProjectsText.classList.remove("hidden");
+}
+
+function shuffleArray(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+}
+
+function createProjectElem(project) {
+  noProjectsText.classList.add("hidden");
+
+  const projectDiv = document.createElement("div");
+  projectDiv.classList.add("project");
+
+  const imgUrl = project.imageUrl;
+  const proxiedUrl = imgUrl.startsWith("http")
+    ? "/img?url=" + project.imageUrl
+    : "/img?url=https://summer.hackclub.com" + project.imageUrl;
+
+  API.proxyMedia(proxiedUrl)
+    .then((img) => {
+      if (img.type === "image") {
+        const imgElem = document.createElement("img");
+        imgElem.src = URL.createObjectURL(img.blob);
+        projectDiv.prepend(imgElem);
+      } else {
+        const videoElem = document.createElement("video");
+        videoElem.src = URL.createObjectURL(img.blob);
+        videoElem.muted = true;
+        videoElem.autoplay = true;
+        videoElem.loop = true;
+        videoElem.controls = true;
+        projectDiv.prepend(videoElem);
+      }
+    })
+    .catch(() => {
+      console.log("Image failed to load :/", project.imageUrl);
+    });
+
+  const rightElem = document.createElement("div");
+  rightElem.classList.add("project-right");
+
+  const nameElem = document.createElement("a");
+  nameElem.textContent = project.name;
+  nameElem.href = "https://summer.hackclub.com" + project.url;
+  nameElem.target = "_blank";
+  nameElem.classList.add("name");
+  rightElem.appendChild(nameElem);
+
+  const authorLinkElem = document.createElement("a");
+  authorLinkElem.href = "/user-search?user=" + project.author;
+  authorLinkElem.textContent = project.author;
+
+  const authorElem = document.createElement("p");
+  authorElem.append(
+    "by ",
+    authorLinkElem,
+    ` • ${project.minutesSpent} mins • ${project.devlogsCount} devlogs`
+  );
+  rightElem.appendChild(authorElem);
+
+  const descElem = document.createElement("p");
+  descElem.textContent = project.description;
+  rightElem.appendChild(descElem);
+
+  projectDiv.appendChild(rightElem);
+
+  return projectDiv;
+}
+
+function getStrippedName(name) {
+  return name.replace(/[^\dA-Za-z]/g, "");
+}
+
+let currentTimeout;
+let requestCounter = 0;
+async function updateProjects() {
+  requestCounter++;
+  let counter = requestCounter;
+  const sort = sortSelect.value;
+  const author = getStrippedName(authorInput.value);
+  const name = getStrippedName(nameInput.value);
+  const limit = Number.parseInt(projectLimitOption.value);
+
+  let projects;
+  try {
+    projects = await API.getProjects();
+  } catch (err) {
+    alert(err.message);
+    return;
+  }
+  if (author) {
+    projects = projects.filter((p) =>
+      getStrippedName(p.author.toLowerCase()).includes(author.toLowerCase())
+    );
+  }
+
+  if (name) {
+    projects = projects.filter((p) =>
+      getStrippedName(p.name.toLowerCase()).includes(name.toLowerCase())
+    );
+  }
+
+  if (sort === "mins") {
+    projects.sort((a, b) => b.minutesSpent - a.minutesSpent);
+  } else if (sort === "devlogs") {
+    projects.sort((a, b) => b.devlogsCount - a.devlogsCount);
+  } else if (sort === "rnd") {
+    shuffleArray(projects);
+  }
+
+  // Prevent old requests from updating content if they finish later
+  if (requestCounter !== counter) return;
+
+  clearProjects();
+  for (const project of projects.splice(0, limit)) {
+    projectsDiv.appendChild(createProjectElem(project));
+  }
+}
+
+async function onChange() {
+  if (currentTimeout != null) {
+    clearTimeout(currentTimeout);
+  }
+
+  currentTimeout = setTimeout(updateProjects, 200);
+}
+
+authorInput.addEventListener("input", onChange);
+nameInput.addEventListener("input", onChange);
+sortSelect.addEventListener("change", onChange);
+projectLimitOption.addEventListener("change", onChange);
+requestUpdateBtn.addEventListener("click", () => {
+  API.requestUpdate()
+    .then((success) => {
+      alert(success ? "Update requested" : "The scraper is busy");
+    })
+    .catch((err) => {
+      alert("Failed to request update: " + err.message);
+    });
+});
+
+const query = new URLSearchParams(location.search);
+if (query.has("author")) {
+  let author = query.get("author");
+  authorInput.value = author;
+}
+
+updateProjects();
