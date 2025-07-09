@@ -150,7 +150,7 @@ async function startScraping() {
 
   let page =
     lastPageScraped?.page_number !== undefined
-      ? lastPageScraped.page_number + 1
+      ? lastPageScraped.page_number - 3
       : 1;
   let added = await scrape(page);
   while (added >= 20) {
@@ -158,22 +158,13 @@ async function startScraping() {
     ++page;
 
     console.log(`Scraping page ${page}`);
-    if (
-      (await db.scrapedPage.count({
-        where: {
-          page_number: page,
-          valid: true,
-        },
-      })) === 0
-    ) {
-      added = await scrape(page);
+    added = await scrape(page);
 
-      await db.scrapedPage.create({
-        data: {
-          page_number: page,
-        },
-      });
-    }
+    await db.scrapedPage.create({
+      data: {
+        page_number: page,
+      },
+    });
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }

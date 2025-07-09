@@ -96,3 +96,25 @@ input {
 .request-update-btn:hover {
   cursor: pointer;
 }
+
+.top-section {
+  display: flex;
+  gap: 20px;
+}
+
+.top-left {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-right {
+  background-color: rgb(35, 35, 35);
+  margin-left: auto;
+  width: 350px;
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

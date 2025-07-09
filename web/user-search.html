@@ -4,37 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SoM Data</title>
-    <link rel="stylesheet" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/assets/css/user-search.css">
+    <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="/assets/css/user-search.css" />
   </head>
   <body>
     <div class="content">
-      <h1>SoM Data</h1>
-      <a href="/">Project search</a>
-      <p>User search</p>
-      <div class="filters">
-        <div class="search">
-          <p>Sort</p>
-          <select id="users-sort">
-            <option value="mins">Minutes spent</option>
-            <option value="devlogs">Devlogs count</option>
-            <option value="rnd">Random</option>
-          </select>
+      <div class="top-section">
+        <div class="top-left">
+          <h1>SoM Data</h1>
+          <a href="/">Project search</a>
+          <p>User search</p>
+          <div class="filters">
+            <div class="search">
+              <p>Sort</p>
+              <select id="users-sort">
+                <option value="mins">Minutes spent</option>
+                <option value="devlogs">Devlogs count</option>
+                <option value="rnd">Random</option>
+              </select>
+            </div>
+            <div class="search">
+              <p>Limit</p>
+              <select id="users-limit">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+              </select>
+            </div>
+            <div class="search">
+              <p>Name</p>
+              <input type="text" id="name-input" />
+            </div>
+          </div>
         </div>
-        <div class="search">
-          <p>Limit</p>
-          <select id="users-limit">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-            <option value="1000">1000</option>
-            <option value="2000">2000</option>
-          </select>
-        </div>
-        <div class="search">
-          <p>Name</p>
-          <input type="text" id="name-input" />
+        <div class="top-right">
+          <p><strong>Stats</strong></p>
+          <p>Total projects: <span id="projects-count"></span></p>
+          <p>Total users: <span id="users-count"></span></p>
+          <p>Total hours: <span id="hours-count"></span></p>
         </div>
       </div>
       <div id="users" class="users">

@@ -8,6 +8,9 @@ const nameInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("project-limit");
 const requestUpdateBtn = document.getElementById("request-update-btn");
 const scraperStateElem = document.getElementById("scraper-state");
+const usersCountElem = document.getElementById("users-count");
+const projectsCountElem = document.getElementById("projects-count");
+const hoursCountElem = document.getElementById("hours-count");
 
 function clearProjects() {
   projectsDiv.replaceChildren();
@@ -106,6 +109,19 @@ async function updateProjects() {
     alert(err.message);
     return;
   }
+
+  projectsCountElem.textContent = projects.length;
+  let usersCount = 0;
+  let users = [];
+  for (const project of projects) {
+    if (!users.includes(project.author)) {
+      ++usersCount;
+      users.push(project.author);
+    }
+  }
+  usersCountElem.textContent = usersCount;
+  hoursCountElem.textContent = Math.floor(projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60 * 100) / 100;
+
   if (author) {
     projects = projects.filter((p) =>
       getStrippedName(p.author.toLowerCase()).includes(author.toLowerCase())
@@ -124,6 +140,9 @@ async function updateProjects() {
     projects.sort((a, b) => b.devlogsCount - a.devlogsCount);
   } else if (sort === "rnd") {
     shuffleArray(projects);
+  } else if (sort === 'url') {
+    projects.sort((a, b) => Number(b.url.split('/')[2]) - Number(a.url.split('/')[2]));
+
   }
 
   // Prevent old requests from updating content if they finish later

@@ -5,6 +5,9 @@ const noUsersText = document.getElementById("no-users");
 const sortSelect = document.getElementById("users-sort");
 const nameInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("users-limit");
+const usersCountElem = document.getElementById("users-count");
+const projectsCountElem = document.getElementById("projects-count");
+const hoursCountElem = document.getElementById("hours-count");
 
 function clearUsers() {
   usersDiv.replaceChildren();
@@ -83,6 +86,10 @@ async function updateProjects() {
       users.push(obj);
     }
   }
+
+  usersCountElem.textContent = users.length;
+  projectsCountElem.textContent = projects.length;
+  hoursCountElem.textContent = Math.floor(projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60 * 100) / 100;
 
   if (name) {
     users = users.filter((u) =>

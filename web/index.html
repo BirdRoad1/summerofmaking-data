@@ -4,45 +4,58 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SoM Data</title>
-    <link rel="stylesheet" href="/assets/css/base.css">
-    <link rel="stylesheet" href="/assets/css/index.css">
+    <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="/assets/css/index.css" />
   </head>
   <body>
     <div class="content">
-      <div class="title-container">
-        <h1>SoM Data</h1>
-        <p>State: <span id="scraper-state" class="state">unknown</span></p>
-        <button id="request-update-btn" class="request-update-btn">Request Update</button>
-      </div>
-      <p>Project search</p>
-      <a href="/user-search">User search</a>
-      <div class="filters">
-        <div class="search">
-          <p>Sort</p>
-          <select id="project-sort">
-            <option value="mins">Minutes spent</option>
-            <option value="devlogs">Devlogs count</option>
-            <option value="rnd">Random</option>
-          </select>
+      <div class="top-section">
+        <div class="top-left">
+          <div class="title-container">
+            <h1>SoM Data</h1>
+            <p>State: <span id="scraper-state" class="state">unknown</span></p>
+            <button id="request-update-btn" class="request-update-btn">
+              Request Update
+            </button>
+          </div>
+          <p>Project search</p>
+          <a href="/user-search">User search</a>
+          <div class="filters">
+            <div class="search">
+              <p>Sort</p>
+              <select id="project-sort">
+                <option value="mins">Minutes spent</option>
+                <option value="devlogs">Devlogs count</option>
+                <option value="url">URL</option>
+                <option value="rnd">Random</option>
+              </select>
+            </div>
+            <div class="search">
+              <p>Limit</p>
+              <select id="project-limit">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+              </select>
+            </div>
+            <div class="search">
+              <p>Author</p>
+              <input type="text" id="author-input" />
+            </div>
+            <div class="search">
+              <p>Name/desc</p>
+              <input type="text" id="name-input" />
+            </div>
+          </div>
         </div>
-        <div class="search">
-          <p>Limit</p>
-          <select id="project-limit">
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-            <option value="1000">1000</option>
-            <option value="2000">2000</option>
-          </select>
-        </div>
-        <div class="search">
-          <p>Author</p>
-          <input type="text" id="author-input" />
-        </div>
-        <div class="search">
-          <p>Name/desc</p>
-          <input type="text" id="name-input" />
+        <div class="top-right">
+          <p><strong>Stats</strong></p>
+          <p>Total projects: <span id="projects-count"></span></p>
+          <p>Total users: <span id="users-count"></span></p>
+          <p>Total hours: <span id="hours-count"></span></p>
         </div>
       </div>
       <div id="projects" class="projects">
