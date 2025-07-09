@@ -1,6 +1,6 @@
-# SoC-Data
+# SoM-Data
 
-This web app can scrape HackClub's Summer of Code website and gather every single project along with every user who has created at least one project.
+This web app can scrape HackClub's Summer of Making website and gather every single project along with every user who has created at least one project.
 
 The projects are stored in a PostgreSQL database. The entire list of projects is sent to the frontend which then does the required processing (sorting, filtering, etc.).
 
@@ -9,7 +9,7 @@ The projects are stored in a PostgreSQL database. The entire list of projects is
 Clone the repo:
 
 ```bash
-git clone https://github.com/BirdRoad1/summerofcode-data.git
+git clone https://github.com/BirdRoad1/summerofmaking-data.git
 ```
 
 Install yarn if necessary:
@@ -40,7 +40,7 @@ This project allows you to see the users with the most hours and the projects wi
 
 ### Ranking
 
-The more valuable Summer of Code prizes are limited in stock, so it may be useful to see how others are doing relative to you. With this project, you can see how you rank in the global leaderboard and exactly who the top rankers are and how many hours they have logged.
+The more valuable Summer of Making prizes are limited in stock, so it may be useful to see how others are doing relative to you. With this project, you can see how you rank in the global leaderboard and exactly who the top rankers are and how many hours they have logged.
 
 ## Requirements
 
