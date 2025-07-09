@@ -1,6 +1,7 @@
 import { parse as parseHTML } from "node-html-parser";
 import { db } from "./db";
-const cookie = "";
+import { env } from "./env";
+const cookie = env.SOC_COOKIE;
 
 function request(url: string, options?: RequestInit) {
   options ??= {};
@@ -28,23 +29,39 @@ function parseTimeString(str: string) {
 
 // scrape task
 async function scrape(page: number) {
-  const res = await request(
-    `https://summer.hackclub.com/explore.turbo_stream?page=${page}&tab=gallery`
-  );
+  const abortController = new AbortController();
+  let timeout = setTimeout(() => {
+    abortController.abort("timed out");
+  }, 3000);
+
+  let res;
+  try {
+    res = await request(
+      `https://summer.hackclub.com/explore.turbo_stream?page=${page}&tab=gallery`,
+      {
+        signal: abortController.signal,
+      }
+    );
+  } catch (err) {
+    let msg = err instanceof Error ? err.message : String(err);
+    throw new Error("Failed to make request. Error: " + msg);
+  }
+
+  clearTimeout(timeout);
 
   const txt = await res.text();
   if (!res.ok) {
-    console.log("scraping failed:", res.status, "text:", txt);
-    return 0;
+    throw new Error("Invalid status: " + res.status + ", text: " + txt);
   }
 
   const document = parseHTML(txt);
-  //   console.log(parsed);
-  //   console.log(txt);
-  //   fs.writeFileSync("nice.html", txt);
   const projects = document.querySelectorAll(
     "turbo-stream[action=append] > template > a"
   );
+
+  if (projects.length === 0) {
+    throw new Error("No projects found in HTML");
+  }
 
   for (const project of projects) {
     const url = project.getAttribute("href");
@@ -113,32 +130,7 @@ async function scrape(page: number) {
   return projects.length;
 }
 
-let scraping = false;
-async function requestScrape() {
-  if (scraping) return false;
-  scraping = true;
-
-  const projs = await db.project.findMany({
-    where: {
-      author: {
-        startsWith: "by ",
-      },
-    },
-  });
-
-  for (const proj of projs) {
-    const updated = await db.project.update({
-      where: {
-        id: proj.id,
-      },
-      data: {
-        author: proj.author.replace("by ", ""),
-      },
-    });
-
-    console.log("updated:", updated.id, updated.name, updated.author);
-  }
-
+async function startScraping() {
   let page = 200;
   let added = await scrape(page);
   while (added > 0) {
@@ -149,8 +141,19 @@ async function requestScrape() {
     added = await scrape(page);
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
+}
 
-  scraping = false;
+let scraping = false;
+function requestScrape() {
+  if (!env.SCRAPER_ENABLED || scraping) return false;
+  scraping = true;
+  startScraping()
+    .catch((err) => {
+      console.log("Scrape error:", err);
+    })
+    .finally(() => {
+      scraping = false;
+    });
   return true;
 }
 

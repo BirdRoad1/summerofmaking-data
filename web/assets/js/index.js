@@ -7,6 +7,7 @@ const authorInput = document.getElementById("author-input");
 const nameInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("project-limit");
 const requestUpdateBtn = document.getElementById("request-update-btn");
+const scraperStateElem = document.getElementById("scraper-state");
 
 function clearProjects() {
   projectsDiv.replaceChildren();
@@ -30,8 +31,8 @@ function createProjectElem(project) {
 
   const imgUrl = project.imageUrl;
   const proxiedUrl = imgUrl.startsWith("http")
-    ? "/img?url=" + project.imageUrl
-    : "/img?url=https://summer.hackclub.com" + project.imageUrl;
+    ? project.imageUrl
+    : "https://summer.hackclub.com" + project.imageUrl;
 
   API.proxyMedia(proxiedUrl)
     .then((img) => {
@@ -146,15 +147,31 @@ authorInput.addEventListener("input", onChange);
 nameInput.addEventListener("input", onChange);
 sortSelect.addEventListener("change", onChange);
 projectLimitOption.addEventListener("change", onChange);
+
 requestUpdateBtn.addEventListener("click", () => {
   API.requestUpdate()
     .then((success) => {
       alert(success ? "Update requested" : "The scraper is busy");
     })
     .catch((err) => {
-      alert("Failed to request update: " + err.message);
+      alert(err.message);
     });
 });
+
+setInterval(
+  (function checkState() {
+    API.getScraperStatus()
+      .then((state) => {
+        scraperStateElem.textContent = state;
+      })
+      .catch((err) => {
+        scraperStateElem.textContent = "unknown";
+      });
+
+    return checkState;
+  })(),
+  1000
+);
 
 const query = new URLSearchParams(location.search);
 if (query.has("author")) {

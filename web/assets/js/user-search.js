@@ -1,4 +1,4 @@
-import { API } from "./api";
+import { API } from "./api.js";
 
 const usersDiv = document.getElementById("users");
 const noUsersText = document.getElementById("no-users");
