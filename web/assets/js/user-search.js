@@ -6,21 +6,14 @@ const sortSelect = document.getElementById("users-sort");
 const nameInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("users-limit");
 const usersCountElem = document.getElementById("users-count");
-const projectsCountElem = document.getElementById("projects-count");
-const hoursCountElem = document.getElementById("hours-count");
+
+API.getUserCount().then((json) => {
+  usersCountElem.textContent = json.users;
+});
 
 function clearUsers() {
   usersDiv.replaceChildren();
   noUsersText.classList.remove("hidden");
-}
-
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
 }
 
 function createUserElem(user, index) {
@@ -39,9 +32,9 @@ function createUserElem(user, index) {
   rightElem.appendChild(nameElem);
 
   const authorElem = document.createElement("p");
-  const coins = Math.floor((user.minutesSpent / 60) * 10);
-  authorElem.textContent = `${user.minutesSpent} mins • ${
-    user.devlogsCount
+  const coins = Math.floor((user.minutes / 60) * 10);
+  authorElem.textContent = `${user.minutes} mins • ${
+    user.devlogs
   } devlogs • est. ${coins} coins • $${Math.floor(coins * 0.03 * 100) / 100}-$${
     Math.floor(coins * 0.29 * 100) / 100
   }`;
@@ -68,75 +61,29 @@ async function updateProjects() {
     ? nameInput.value.split("/").pop()
     : getStrippedName(nameInput.value);
 
-  const limit =
-    projectLimitOption.value === "all"
-      ? Number.POSITIVE_INFINITY
-      : Number.parseInt(projectLimitOption.value);
+  const limit = Number.parseInt(projectLimitOption.value);
 
-  let users = [];
-  let projects;
+  let users;
   try {
-    projects = await API.getProjects();
+    users = await API.getUsers(name, sort, limit);
   } catch (err) {
     alert(err.message);
     return;
   }
 
-  for (const project of projects) {
-    let user = users.find((u) => u.name === project.author);
-    if (user) {
-      user.projects.push(project);
-      user.minutesSpent += project.minutesSpent;
-      user.devlogsCount += project.devlogsCount;
-    } else {
-      let obj = {
-        name: project.author,
-        minutesSpent: project.minutesSpent,
-        devlogsCount: project.devlogsCount,
-        slackId: project.slackId,
-        projects: [project],
-      };
-      users.push(obj);
-    }
-  }
-
-  usersCountElem.textContent = users.length;
-  projectsCountElem.textContent = projects.length;
-  hoursCountElem.textContent =
-    Math.floor(
-      (projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60) * 100
-    ) / 100;
-
-  if (name) {
-    if (isSlack) {
-      // projects = projects.filter(
-      //   (p) => p.slackId.toLowerCase() === author.toLowerCase()
-      // );
-      users = users.filter(
-        (u) => u.slackId.toLowerCase() === name.toLowerCase()
-      );
-    } else {
-      users = users.filter((u) =>
-        getStrippedName(u.name.toLowerCase()).includes(name.toLowerCase())
-      );
-    }
-  }
-
-  if (sort === "mins") {
-    users.sort((a, b) => b.minutesSpent - a.minutesSpent);
-  } else if (sort === "devlogs") {
-    users.sort((a, b) => b.devlogsCount - a.devlogsCount);
-  } else if (sort === "rnd") {
-    shuffleArray(users);
-  }
+  // usersCountElem.textContent = users.length;
+  // projectsCountElem.textContent = users.length;
+  // hoursCountElem.textContent =
+  //   Math.floor(
+  //     (users.reduce((prev, curr) => prev + curr.minutes, 0) / 60) * 100
+  //   ) / 100;
 
   // Prevent old requests from updating content if they finish later
   if (requestCounter !== counter) return;
 
   clearUsers();
-  const portion = users.splice(0, limit);
-  for (let i = 0; i < portion.length; i++) {
-    const user = portion[i];
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
     usersDiv.appendChild(createUserElem(user, i + 1));
   }
 }

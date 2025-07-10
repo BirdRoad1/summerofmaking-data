@@ -16,27 +16,40 @@ datasource db {
 
 model Project {
   id               Int       @id @default(autoincrement())
+  projectId        Int       @unique @map("project_id")
   name             String
-  author           String
-  url              String    @unique
-  imageUrl         String
+  imageUrl         String    @map("image_url")
   description      String
   category         String?
-  readmeLink       String?
-  demoLink         String?
-  repoLink         String?
-  slackId          String?
-  projectCreatedAt DateTime?
-  projectUpdatedAt DateTime?
-  minutesSpent     Int
-  devlogsCount     Int
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt @default(now())
+  readmeLink       String?   @map("readme_link")
+  demoLink         String?   @map("demo_link")
+  repoLink         String?   @map("repo_link")
+  projectCreatedAt DateTime? @map("project_created_at")
+  projectUpdatedAt DateTime? @map("project_updated_at")
+  minutesSpent     Int       @map("minutes_spent")
+  devlogsCount     Int       @map("devlogs_count")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+  User             User     @relation(fields: [userId], references: [id])
+  userId           Int      @map("user_id")
+
+  @@map("project")
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  name     String?
+  slackId  String?    @unique @map("slack_id")
+  projects Project[]
+
+  @@map("user")
 }
 
 model ScrapedPage {
-  id           Int      @id @default(autoincrement())
-  page_number  Int
-  last_scraped DateTime @default(now())
-  valid        Boolean  @default(true)
+  id          Int      @id @default(autoincrement())
+  pageNumber  Int      @map("page_number")
+  lastScraped DateTime @default(now()) @map("last_scraped")
+  valid       Boolean  @default(true)
+
+  @@map("scraped_page")
 }

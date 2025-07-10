@@ -1,29 +1,33 @@
 import express from "express";
-import { scraper } from "../scraper.js";
-import { env } from "../env.js";
-import { db } from "../db.js";
+import { scraper } from "../../scraper/scraper.js";
+import { env } from "../../config/env.js";
 
-export const ScraperRouter = express.Router();
-
-ScraperRouter.use((req, res, next) => {
+const checkScraperEnabled = async (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
   if (!env.SCRAPER_ENABLED) {
     res.status(400).json({ error: "The scraper is disabled" });
     return;
   }
 
   next();
-});
+};
 
-ScraperRouter.post("/request", async (req, res) => {
+const postRequest = async (req: express.Request, res: express.Response) => {
   const result = scraper.requestScrape();
   console.log("[scraper] scraper enable requested:", req.ip, result);
 
   return res.json({
     status: result,
   });
-});
+};
 
-ScraperRouter.post("/request-force", async (req, res) => {
+const postRequestForce = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const authHeader = req.headers["authorization"];
   if (
     typeof authHeader !== "string" ||
@@ -43,27 +47,17 @@ ScraperRouter.post("/request-force", async (req, res) => {
   return res.json({
     status: result,
   });
-});
+};
 
-// ScraperRouter.post("/reset-pages", async (req, res) => {
-//   const authHeader = req.headers["authorization"];
-//   if (
-//     typeof authHeader !== "string" ||
-//     authHeader !== "Bearer " + env.SECRET_KEY
-//   ) {
-//     console.log("[scraper] reset pages failed validation");
-//     return res.status(404).json({ error: "Not found" });
-//   }
-
-//   console.log("[scraper] reset pages succeeded!");
-
-//   return res.json({
-//     result,
-//   });
-// });
-
-ScraperRouter.get("/status", (req, res) => {
-  return res.json({
+const getStatus = (req: express.Request, res: express.Response) => {
+  res.json({
     status: scraper.getState(),
   });
+};
+
+export const scraperController = Object.freeze({
+  checkScraperEnabled,
+  postRequest,
+  postRequestForce,
+  getStatus,
 });

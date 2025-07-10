@@ -1,7 +1,8 @@
 import express from "express";
-import { APIRouter } from "./routes/api.js";
-import { env } from "./env.js";
-import { scheduleScrape, send404 } from "./util.js";
+import { APIRouter } from "./routes/api/index.route.js";
+import { env } from "./config/env.js";
+import { scraper } from "./scraper/scraper.js";
+import path from "path";
 
 const app = express();
 
@@ -20,10 +21,24 @@ app.use(
 
 app.use("/api", APIRouter);
 
-app.use(send404);
+const file404 = path.resolve("./web/404.html");
+app.use((req: express.Request, res: express.Response) => {
+  res.status(404).sendFile(file404);
+});
 
-scheduleScrape();
+app.use(
+  (
+    err: Error,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.log("Server error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+);
 
 app.listen(env.PORT, () => {
   console.log(`Listening on http://localhost:${env.PORT}/`);
+  scraper.scheduleScrape();
 });

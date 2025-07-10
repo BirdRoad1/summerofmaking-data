@@ -1,5 +1,45 @@
-async function getProjects() {
-  let res = await fetch("/api/projects");
+async function getProjects(author, name, sort, limit) {
+  const params = new URLSearchParams({
+    sort,
+    limit,
+  });
+
+  if (author) {
+    params.append("author", author);
+  }
+
+  if (name) {
+    params.append("name", name);
+  }
+
+  let res = await fetch("/api/projects?" + params.toString());
+  let text = "";
+  let json;
+  try {
+    text = await res.text();
+    json = JSON.parse(text);
+
+    if (!res.ok) {
+      throw new Error(json.error);
+    }
+  } catch (err) {
+    throw new Error("Failed to parse json:" + text);
+  }
+
+  return json;
+}
+
+async function getUsers(name, sort, limit) {
+  const params = new URLSearchParams({
+    sort,
+    limit,
+  });
+
+  if (name) {
+    params.append("name", name);
+  }
+
+  let res = await fetch("/api/users?" + params.toString());
   let text = "";
   let json;
   try {
@@ -85,10 +125,49 @@ async function getScraperStatus() {
   return json.status;
 }
 
-export const API = {
+async function getUserCount() {
+  let res = await fetch("/api/users/count");
+  let text = "";
+  let json;
+  try {
+    text = await res.text();
+    json = JSON.parse(text);
+
+    if (!res.ok) {
+      throw new Error(json.error);
+    }
+  } catch (err) {
+    throw new Error("Failed to parse json:" + text);
+  }
+
+  return json;
+}
+
+async function getProjectCount() {
+  let res = await fetch("/api/projects/count");
+  let text = "";
+  let json;
+  try {
+    text = await res.text();
+    json = JSON.parse(text);
+
+    if (!res.ok) {
+      throw new Error(json.error);
+    }
+  } catch (err) {
+    throw new Error("Failed to parse json:" + text);
+  }
+
+  return json;
+}
+
+export const API = Object.freeze({
   getProjects,
+  getUsers,
   proxyMedia,
   requestUpdate,
   requestForceUpdate,
   getScraperStatus,
-};
+  getUserCount,
+  getProjectCount,
+});

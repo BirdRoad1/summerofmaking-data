@@ -9,21 +9,13 @@ const projectLimitOption = document.getElementById("project-limit");
 const requestUpdateBtn = document.getElementById("request-update-btn");
 const forceUpdateBtn = document.getElementById("force-update-btn");
 const scraperStateElem = document.getElementById("scraper-state");
-const usersCountElem = document.getElementById("users-count");
+const devlogsElem = document.getElementById("devlogs-count");
 const projectsCountElem = document.getElementById("projects-count");
 const hoursCountElem = document.getElementById("hours-count");
+
 function clearProjects() {
   projectsDiv.replaceChildren();
   noProjectsText.classList.remove("hidden");
-}
-
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
 }
 
 function createProjectElem(project) {
@@ -62,17 +54,17 @@ function createProjectElem(project) {
 
   const nameElem = document.createElement("a");
   nameElem.textContent = project.name;
-  nameElem.href = "https://summer.hackclub.com" + project.url;
+  nameElem.href = "https://summer.hackclub.com/projects/" + project.projectId;
   nameElem.target = "_blank";
   nameElem.classList.add("name");
   rightElem.appendChild(nameElem);
 
   const authorLinkElem = document.createElement("a");
-  authorLinkElem.href = "/user-search?user=" + project.author;
-  authorLinkElem.textContent = project.author;
+  authorLinkElem.href = "/user-search?user=" + project.authorName;
+  authorLinkElem.textContent = project.authorName;
 
   const authorElem = document.createElement("p");
-  authorElem.classList.add('author')
+  authorElem.classList.add("author");
   const coins = Math.floor((project.minutesSpent / 60) * 10);
 
   authorElem.append(
@@ -165,9 +157,11 @@ function createProjectElem(project) {
   return projectDiv;
 }
 
-function getStrippedName(name) {
-  return name.replace(/[^\dA-Za-z]/g, "");
-}
+API.getProjectCount().then((json) => {
+  projectsCountElem.textContent = json.projects;
+  devlogsElem.textContent = json.devlogs;
+  hoursCountElem.textContent = Math.floor((json.minutes / 60) * 100) / 100;
+});
 
 let currentTimeout;
 let requestCounter = 0;
@@ -175,26 +169,21 @@ async function updateProjects() {
   requestCounter++;
   let counter = requestCounter;
   const sort = sortSelect.value;
-  let isSlack = authorInput.value.startsWith("http");
   const author = authorInput.value.startsWith("http")
     ? authorInput.value.split("/").pop()
-    : getStrippedName(authorInput.value);
+    : authorInput.value;
 
-  const name = getStrippedName(nameInput.value);
-  const limit =
-    projectLimitOption.value === "all"
-      ? Number.POSITIVE_INFINITY
-      : Number.parseInt(projectLimitOption.value);
+  const name = nameInput.value;
+  const limit = Number.parseInt(projectLimitOption.value);
 
   let projects;
   try {
-    projects = await API.getProjects();
+    projects = await API.getProjects(author, name, sort, limit);
   } catch (err) {
     alert(err.message);
     return;
   }
 
-  projectsCountElem.textContent = projects.length;
   let usersCount = 0;
   let users = [];
   for (const project of projects) {
@@ -202,41 +191,6 @@ async function updateProjects() {
       ++usersCount;
       users.push(project.author);
     }
-  }
-  usersCountElem.textContent = usersCount;
-  hoursCountElem.textContent =
-    Math.floor(
-      (projects.reduce((prev, curr) => prev + curr.minutesSpent, 0) / 60) * 100
-    ) / 100;
-
-  if (author) {
-    if (isSlack) {
-      projects = projects.filter(
-        (p) => p.slackId.toLowerCase() === author.toLowerCase()
-      );
-    } else {
-      projects = projects.filter((p) =>
-        getStrippedName(p.author.toLowerCase()).includes(author.toLowerCase())
-      );
-    }
-  }
-
-  if (name) {
-    projects = projects.filter((p) =>
-      getStrippedName(p.name.toLowerCase()).includes(name.toLowerCase())
-    );
-  }
-
-  if (sort === "mins") {
-    projects.sort((a, b) => b.minutesSpent - a.minutesSpent);
-  } else if (sort === "devlogs") {
-    projects.sort((a, b) => b.devlogsCount - a.devlogsCount);
-  } else if (sort === "rnd") {
-    shuffleArray(projects);
-  } else if (sort === "url") {
-    projects.sort(
-      (a, b) => Number(b.url.split("/")[2]) - Number(a.url.split("/")[2])
-    );
   }
 
   // Prevent old requests from updating content if they finish later

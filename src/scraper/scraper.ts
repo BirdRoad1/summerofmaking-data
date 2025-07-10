@@ -1,14 +1,16 @@
 import { parse as parseHTML } from "node-html-parser";
-import { db } from "./db.js";
-import { env } from "./env.js";
+import { db } from "../config/db.js";
+import { env } from "../config/env.js";
+
 const cookie = env.SOC_COOKIE;
+const USER_AGENT =
+  "SoM-Data/1.0.0 (+https://summer.hackclub.com/projects/5942; +https://som.jlmsz.com/)";
 
 function request(url: string, options?: RequestInit) {
   options ??= {};
   options.headers ??= {};
   (options.headers as Record<string, string>).cookie = cookie;
-  (options.headers as Record<string, string>)["user-agent"] =
-    "SoM-Data/1.0.0 (+https://summer.hackclub.com/projects/5942; +https://som.jlmsz.com/)";
+  (options.headers as Record<string, string>)["user-agent"] = USER_AGENT;
 
   return fetch(url, options);
 }
@@ -92,6 +94,8 @@ async function scrape(page: number): Promise<number> {
 
     for (const project of projects) {
       const url = project.getAttribute("href");
+      const idStr = url?.split("/").pop();
+      const id = idStr !== undefined ? Number(idStr) : undefined;
       const imgUrl = project.querySelector("img")?.getAttribute("src");
       const name = project.querySelector("h2")?.textContent;
       const byLine = project
@@ -111,10 +115,16 @@ async function scrape(page: number): Promise<number> {
       const mins = parseTimeString(timeStr);
       const devlogs = Number.parseInt(devlogsStr.split(" ")[0]);
 
+      if (id === undefined || Number.isNaN(id)) {
+        console.log("Invalid id:", id, url, project.outerHTML);
+        continue;
+      }
+
       if (Number.isNaN(devlogs)) {
         console.log("Invalid devlogs:", devlogs, project.outerHTML);
         continue;
       }
+
       if (name == null) {
         console.log("Missing name", project.outerHTML);
         continue;
@@ -135,40 +145,55 @@ async function scrape(page: number): Promise<number> {
       }
 
       const apiScraped = await scrapeAPI(url);
+      if (!apiScraped || !apiScraped.slack_id) {
+        console.log("Missing API data for user:", url);
+        continue;
+      }
 
       await db.project.upsert({
         where: {
-          url,
+          projectId: id,
         },
         create: {
+          projectId: id,
           name,
-          author: by,
+          User: {
+            connectOrCreate: {
+              where: {
+                slackId: apiScraped.slack_id,
+              },
+              create: {
+                name: by,
+                slackId: apiScraped.slack_id,
+              },
+            },
+          },
           description,
           devlogsCount: Number(devlogs),
           minutesSpent: mins,
-          url,
           imageUrl: imgUrl,
           readmeLink: apiScraped?.readme_link,
           repoLink: apiScraped?.repo_link,
           demoLink: apiScraped?.demo_link,
           category: apiScraped?.category,
-          slackId: apiScraped?.slack_id,
           projectCreatedAt: apiScraped?.created_at,
           projectUpdatedAt: apiScraped?.updated_at,
         },
         update: {
           name,
-          author: by,
+          User: {
+            update: {
+              name: by,
+            },
+          },
           description,
           devlogsCount: Number(devlogs),
           minutesSpent: mins,
-          url,
           imageUrl: imgUrl,
           readmeLink: apiScraped?.readme_link,
           repoLink: apiScraped?.repo_link,
           demoLink: apiScraped?.demo_link,
           category: apiScraped?.category,
-          slackId: apiScraped?.slack_id,
           projectCreatedAt: apiScraped?.created_at,
           projectUpdatedAt: apiScraped?.updated_at,
         },
@@ -187,7 +212,7 @@ async function scrape(page: number): Promise<number> {
 async function startScraping(): Promise<void> {
   const lastPageScraped = await db.scrapedPage.findFirst({
     orderBy: {
-      page_number: "desc",
+      pageNumber: "desc",
     },
     where: {
       valid: true,
@@ -196,8 +221,8 @@ async function startScraping(): Promise<void> {
   });
 
   let page =
-    lastPageScraped?.page_number !== undefined
-      ? lastPageScraped.page_number + 1
+    lastPageScraped?.pageNumber !== undefined
+      ? lastPageScraped.pageNumber + 1
       : 1;
   let added = await scrape(page);
   while (added >= 20) {
@@ -209,7 +234,7 @@ async function startScraping(): Promise<void> {
 
     await db.scrapedPage.create({
       data: {
-        page_number: page,
+        pageNumber: page,
       },
     });
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -245,8 +270,25 @@ async function resetPages() {
   });
 }
 
+export function scheduleScrape() {
+  if (!env.SCRAPER_ENABLED) return;
+
+  let start = Date.now();
+  let scrapeInterval = 3 * 60 * 60 * 1000; // 3 hours
+  let count = 1;
+
+  setTimeout(async function exec() {
+    let nextExecution = start + ++count * scrapeInterval;
+    await scraper.resetPages();
+    console.log("Requested scheduled scrape: " + scraper.requestScrape());
+
+    setTimeout(exec, Math.max(0, nextExecution - Date.now()));
+  }, scrapeInterval);
+}
+
 export const scraper = {
   requestScrape,
   getState,
   resetPages,
+  scheduleScrape,
 };
