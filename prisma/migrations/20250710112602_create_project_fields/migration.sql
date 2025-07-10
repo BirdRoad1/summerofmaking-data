@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "category" TEXT,
+ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "demoLink" TEXT,
+ADD COLUMN     "projectCreatedAt" TIMESTAMP(3),
+ADD COLUMN     "projectUpdatedAt" TIMESTAMP(3),
+ADD COLUMN     "readmeLink" TEXT,
+ADD COLUMN     "repoLink" TEXT,
+ADD COLUMN     "slackId" TEXT,
+ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

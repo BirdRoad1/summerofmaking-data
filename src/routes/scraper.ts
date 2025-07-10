@@ -16,32 +16,51 @@ ScraperRouter.use((req, res, next) => {
 
 ScraperRouter.post("/request", async (req, res) => {
   const result = scraper.requestScrape();
-
-  console.log("[scraper] scraper enable requested:", result);
+  console.log("[scraper] scraper enable requested:", req.ip, result);
 
   return res.json({
     status: result,
   });
 });
 
-ScraperRouter.post("/reset-pages", async (req, res) => {
+ScraperRouter.post("/request-force", async (req, res) => {
   const authHeader = req.headers["authorization"];
   if (
     typeof authHeader !== "string" ||
     authHeader !== "Bearer " + env.SECRET_KEY
   ) {
-    console.log("[scraper] reset pages failed validation");
-    return res.status(404).json({ error: "Not found" });
+    console.log("[scraper] force request pages failed validation", req.ip);
+    return res
+      .status(403)
+      .json({ error: "You are not authorized to do this!" });
   }
 
-  const result = await scraper.resetPages();
+  await scraper.resetPages();
 
-  console.log("[scraper] reset pages succeeded!");
+  const result = scraper.requestScrape();
+  console.log("[scraper] force scrape requested", req.ip, result);
 
   return res.json({
-    result,
+    status: result,
   });
 });
+
+// ScraperRouter.post("/reset-pages", async (req, res) => {
+//   const authHeader = req.headers["authorization"];
+//   if (
+//     typeof authHeader !== "string" ||
+//     authHeader !== "Bearer " + env.SECRET_KEY
+//   ) {
+//     console.log("[scraper] reset pages failed validation");
+//     return res.status(404).json({ error: "Not found" });
+//   }
+
+//   console.log("[scraper] reset pages succeeded!");
+
+//   return res.json({
+//     result,
+//   });
+// });
 
 ScraperRouter.get("/status", (req, res) => {
   return res.json({

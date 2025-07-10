@@ -38,6 +38,27 @@ async function requestUpdate() {
     method: "POST",
   });
 
+  const json = await res.json();
+
+  if (!res.ok) {
+    throw new Error(json.error ?? "Unknown error");
+  }
+
+  return json.status;
+}
+
+/**
+ * @param {string | undefined} token
+ * @returns
+ */
+async function requestForceUpdate(token) {
+  let res = await fetch("/api/scraper/request-force", {
+    method: "POST",
+    headers: {
+      authorization: "Bearer " + token,
+    },
+  });
+
   if (!res.ok) {
     const json = await res.json();
     throw new Error(json.error ?? "Unknown error");
@@ -68,5 +89,6 @@ export const API = {
   getProjects,
   proxyMedia,
   requestUpdate,
+  requestForceUpdate,
   getScraperStatus,
 };

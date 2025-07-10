@@ -7,11 +7,11 @@ const authorInput = document.getElementById("author-input");
 const nameInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("project-limit");
 const requestUpdateBtn = document.getElementById("request-update-btn");
+const forceUpdateBtn = document.getElementById("force-update-btn");
 const scraperStateElem = document.getElementById("scraper-state");
 const usersCountElem = document.getElementById("users-count");
 const projectsCountElem = document.getElementById("projects-count");
 const hoursCountElem = document.getElementById("hours-count");
-
 function clearProjects() {
   projectsDiv.replaceChildren();
   noProjectsText.classList.remove("hidden");
@@ -104,10 +104,14 @@ async function updateProjects() {
   requestCounter++;
   let counter = requestCounter;
   const sort = sortSelect.value;
-  const author = getStrippedName(authorInput.value);
+  let isSlack = authorInput.value.startsWith("http");
+  const author = authorInput.value.startsWith("http")
+    ? authorInput.value.split("/").pop()
+    : getStrippedName(authorInput.value);
+
   const name = getStrippedName(nameInput.value);
   const limit =
-  projectLimitOption.value === "all"
+    projectLimitOption.value === "all"
       ? Number.POSITIVE_INFINITY
       : Number.parseInt(projectLimitOption.value);
 
@@ -135,9 +139,15 @@ async function updateProjects() {
     ) / 100;
 
   if (author) {
-    projects = projects.filter((p) =>
-      getStrippedName(p.author.toLowerCase()).includes(author.toLowerCase())
-    );
+    if (isSlack) {
+      projects = projects.filter(
+        (p) => p.slackId.toLowerCase() === author.toLowerCase()
+      );
+    } else {
+      projects = projects.filter((p) =>
+        getStrippedName(p.author.toLowerCase()).includes(author.toLowerCase())
+      );
+    }
   }
 
   if (name) {
@@ -184,6 +194,21 @@ requestUpdateBtn.addEventListener("click", () => {
   API.requestUpdate()
     .then((success) => {
       alert(success ? "Update requested" : "The scraper is busy");
+    })
+    .catch((err) => {
+      alert(err.message);
+    });
+});
+
+forceUpdateBtn.addEventListener("click", () => {
+  const token = prompt("Enter the secret token:");
+  if (!token) {
+    return;
+  }
+
+  API.requestForceUpdate(token)
+    .then((success) => {
+      alert(success ? "Force update requested" : "The scraper is busy");
     })
     .catch((err) => {
       alert(err.message);

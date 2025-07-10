@@ -44,6 +44,7 @@ APIRouter.get(
         minutesSpent: true,
         name: true,
         url: true,
+        slackId: true,
       },
     });
 

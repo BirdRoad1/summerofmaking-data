@@ -1,7 +1,6 @@
 import express from "express";
 import { APIRouter } from "./routes/api.js";
 import { env } from "./env.js";
-import path from "path";
 import { scheduleScrape, send404 } from "./util.js";
 
 const app = express();

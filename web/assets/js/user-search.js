@@ -63,12 +63,16 @@ async function updateProjects() {
   requestCounter++;
   let counter = requestCounter;
   const sort = sortSelect.value;
-  const name = getStrippedName(nameInput.value);
+  let isSlack = nameInput.value.startsWith("http");
+  const name = isSlack
+    ? nameInput.value.split("/").pop()
+    : getStrippedName(nameInput.value);
+
   const limit =
-  projectLimitOption.value === "all"
+    projectLimitOption.value === "all"
       ? Number.POSITIVE_INFINITY
       : Number.parseInt(projectLimitOption.value);
-      
+
   let users = [];
   let projects;
   try {
@@ -89,6 +93,7 @@ async function updateProjects() {
         name: project.author,
         minutesSpent: project.minutesSpent,
         devlogsCount: project.devlogsCount,
+        slackId: project.slackId,
         projects: [project],
       };
       users.push(obj);
@@ -103,9 +108,18 @@ async function updateProjects() {
     ) / 100;
 
   if (name) {
-    users = users.filter((u) =>
-      getStrippedName(u.name.toLowerCase()).includes(name.toLowerCase())
-    );
+    if (isSlack) {
+      // projects = projects.filter(
+      //   (p) => p.slackId.toLowerCase() === author.toLowerCase()
+      // );
+      users = users.filter(
+        (u) => u.slackId.toLowerCase() === name.toLowerCase()
+      );
+    } else {
+      users = users.filter((u) =>
+        getStrippedName(u.name.toLowerCase()).includes(name.toLowerCase())
+      );
+    }
   }
 
   if (sort === "mins") {
