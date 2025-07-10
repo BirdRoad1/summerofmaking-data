@@ -72,6 +72,7 @@ function createProjectElem(project) {
   authorLinkElem.textContent = project.author;
 
   const authorElem = document.createElement("p");
+  authorElem.classList.add('author')
   const coins = Math.floor((project.minutesSpent / 60) * 10);
 
   authorElem.append(
@@ -84,6 +85,76 @@ function createProjectElem(project) {
     }-$${Math.floor(coins * 0.29 * 100) / 100}`
   );
   rightElem.appendChild(authorElem);
+
+  let datesArray = [];
+
+  if (project.projectCreatedAt) {
+    const createdTxt = document.createElement("span");
+    const date = new Date(project.projectCreatedAt);
+    const dateTime = `${date.toLocaleDateString()}`;
+    createdTxt.textContent = `Created: ${dateTime}`;
+    datesArray.push(createdTxt);
+  }
+
+  if (project.projectUpdatedAt) {
+    const updateTxt = document.createElement("span");
+    const date = new Date(project.projectUpdatedAt);
+    const dateTime = `${date.toLocaleDateString()}`;
+    updateTxt.textContent = `Updated: ${dateTime}`;
+    datesArray.push(updateTxt);
+  }
+
+  if (datesArray.length > 0) {
+    const datesP = document.createElement("p");
+    datesP.classList.add("dates");
+    for (let i = 0; i < datesArray.length; i++) {
+      datesP.append(datesArray[i]);
+      if (i < datesArray.length - 1) {
+        datesP.append(" - ");
+      }
+    }
+
+    rightElem.appendChild(datesP);
+  }
+
+  let linksArray = [];
+
+  if (project.repoLink) {
+    const repoLink = document.createElement("a");
+    repoLink.textContent = "Repo";
+    repoLink.target = "_blank";
+    repoLink.href = project.repoLink;
+    linksArray.push(repoLink);
+  }
+
+  if (project.demoLink) {
+    const demoLink = document.createElement("a");
+    demoLink.textContent = "Demo";
+    demoLink.target = "_blank";
+    demoLink.href = project.demoLink;
+    linksArray.push(demoLink);
+  }
+
+  if (project.readmeLink) {
+    const readmeLink = document.createElement("a");
+    readmeLink.textContent = "Readme";
+    readmeLink.target = "_blank";
+    readmeLink.href = project.readmeLink;
+    linksArray.push(readmeLink);
+  }
+
+  const linksP = document.createElement("p");
+  linksP.classList.add("links");
+  if (linksArray.length > 0) {
+    for (let i = 0; i < linksArray.length; i++) {
+      linksP.append(linksArray[i]);
+      if (i < linksArray.length - 1) {
+        linksP.append(" • ");
+      }
+    }
+
+    rightElem.appendChild(linksP);
+  }
 
   const descElem = document.createElement("p");
   descElem.textContent = project.description;

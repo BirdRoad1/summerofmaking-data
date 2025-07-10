@@ -68,8 +68,17 @@ input {
 .project .name {
   font-size: 20px;
   font-weight: 500;
-  color: white;
+  color: rgb(240, 240, 240);
   text-decoration: none;
+}
+
+.project .author,
+.project .dates {
+  color: rgb(240, 240, 240);
+}
+
+.project a {
+  color: rgb(122, 113, 223);
 }
 
 .project img,

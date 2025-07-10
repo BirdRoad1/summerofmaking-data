@@ -45,6 +45,11 @@ APIRouter.get(
         name: true,
         url: true,
         slackId: true,
+        repoLink: true,
+        demoLink: true,
+        readmeLink: true,
+        projectUpdatedAt: true,
+        projectCreatedAt: true
       },
     });
 
