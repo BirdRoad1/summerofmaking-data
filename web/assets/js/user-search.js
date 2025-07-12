@@ -46,20 +46,13 @@ function createUserElem(user, index) {
   return userDiv;
 }
 
-function getStrippedName(name) {
-  return name.replace(/[^\dA-Za-z]/g, "");
-}
-
 let currentTimeout;
 let requestCounter = 0;
 async function updateProjects() {
   requestCounter++;
   let counter = requestCounter;
   const sort = sortSelect.value;
-  let isSlack = nameInput.value.startsWith("http");
-  const name = isSlack
-    ? nameInput.value.split("/").pop()
-    : getStrippedName(nameInput.value);
+  const name = nameInput.value.startsWith("http") ? nameInput.value.split("/").pop() : nameInput.value;
 
   const limit = Number.parseInt(projectLimitOption.value);
 
@@ -71,14 +64,6 @@ async function updateProjects() {
     return;
   }
 
-  // usersCountElem.textContent = users.length;
-  // projectsCountElem.textContent = users.length;
-  // hoursCountElem.textContent =
-  //   Math.floor(
-  //     (users.reduce((prev, curr) => prev + curr.minutes, 0) / 60) * 100
-  //   ) / 100;
-
-  // Prevent old requests from updating content if they finish later
   if (requestCounter !== counter) return;
 
   clearUsers();
