@@ -85,4 +85,47 @@ const getCount = async (req: express.Request, res: express.Response) => {
   });
 };
 
-export const projectsController = Object.freeze({ getProjects, getCount });
+const getProject = async (req: express.Request, res: express.Response) => {
+  const { projectId: projectIdStr } = req.params;
+  const projectId = Number(projectIdStr);
+  if (!Number.isFinite(projectId)) {
+    res.status(400).json({ error: "Invalid project id" });
+    return;
+  }
+
+  const project = await db.project.findFirst({
+    where: {
+      projectId,
+    },
+    select: {
+      projectId: true,
+      name: true,
+      imageUrl: true,
+      description: true,
+      category: true,
+      readmeLink: true,
+      demoLink: true,
+      repoLink: true,
+      projectCreatedAt: true,
+      projectUpdatedAt: true,
+      minutesSpent: true,
+      devlogsCount: true,
+      createdAt: true,
+      updatedAt: true,
+      userId: true,
+    },
+  });
+
+  if (project === null) {
+    res.status(404).json({ error: "The project does not exist" });
+    return;
+  }
+
+  return res.json({ project });
+};
+
+export const projectsController = Object.freeze({
+  getProjects,
+  getCount,
+  getProject,
+});

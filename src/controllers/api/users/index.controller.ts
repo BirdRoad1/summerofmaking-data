@@ -69,4 +69,25 @@ const getCount = async (req: express.Request, res: express.Response) => {
   });
 };
 
-export const usersController = Object.freeze({ getUsers, getCount });
+const getUser = async (req: express.Request, res: express.Response) => {
+  const { slackId } = req.params;
+
+  const project = await db.user.findFirst({
+    where: {
+      slackId,
+    },
+    select: {
+      name: true,
+      slackId: true,
+    },
+  });
+
+  if (project === null) {
+    res.status(404).json({ error: "The project does not exist" });
+    return;
+  }
+
+  return res.json({ project });
+};
+
+export const usersController = Object.freeze({ getUsers, getCount, getUser });

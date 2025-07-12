@@ -6,3 +6,5 @@ export const projectsRouter = express.Router();
 projectsRouter.get("/", projectsController.getProjects);
 
 projectsRouter.get("/count", projectsController.getCount);
+
+projectsRouter.get("/:projectId", projectsController.getProject);
