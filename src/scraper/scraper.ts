@@ -471,6 +471,7 @@ async function startScrapingUsers(): Promise<void> {
 let scraping = false;
 function requestScrape(): boolean {
   if (!env.SCRAPER_ENABLED || scraping) return false;
+  console.log("Start scraping");
   scraping = true;
   startScrapingProjects()
     .catch((err) => {
