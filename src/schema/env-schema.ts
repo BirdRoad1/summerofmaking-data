@@ -22,4 +22,6 @@ export const envSchema = z.object({
       message: "Secret key must be a 32-character hexadecimal string",
     })
     .length(32),
+  SLACK_CLIENT_ID: z.string().optional(),
+  SLACK_CLIENT_SECRET: z.string().optional(),
 });

@@ -11,6 +11,10 @@ const getImg = async (req: express.Request, res: express.Response) => {
   const allowed = [
     "https://hc-cdn.hel1.your-objectstorage.com/s/v3/",
     "https://summer.hackclub.com/rails/active_storage/",
+    "https://journey.90e2da927f7b2f6c30f10f86d1b5e679.r2.cloudflarestorage.com/",
+    "https://summer.hackclub.com/",
+    "https://avatars.slack-edge.com/",
+    "https://secure.gravatar.com/"
   ];
 
   if (
@@ -19,6 +23,7 @@ const getImg = async (req: express.Request, res: express.Response) => {
     )
   ) {
     res.status(400).send("host not allowed!");
+    console.log("Disallowed host:", url);
     return;
   }
 
@@ -40,7 +45,11 @@ const getImg = async (req: express.Request, res: express.Response) => {
     return;
   }
 
-  const proxiedRes = await fetch(url);
+  const proxiedRes = await fetch(url, {
+    headers: {
+      'User-Agent': 'SoMData'
+    }
+  });
   if (proxiedRes.ok && proxiedRes.body) {
     const streams = proxiedRes.body.tee();
     streams[0].pipeTo(

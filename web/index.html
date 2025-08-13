@@ -5,15 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SoM Data</title>
     <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="/assets/css/banner.css" />
     <link rel="stylesheet" href="/assets/css/index.css" />
   </head>
   <body>
+    <div class="love-banner">
+      <a href="https://summer.hackclub.com/projects/5942"
+        >Made with &lt;3 by Jose!</a
+      >
+    </div>
     <div class="content">
       <div class="top-section">
         <div class="top-left">
           <div class="title-container">
             <h1>SoM Data</h1>
-            <p>State: <span id="scraper-state" class="state">unknown</span></p>
+            <span id="scraper-state" class="state">unknown</span>
             <button id="request-update-btn" class="request-update-btn">
               Request Update
             </button>
@@ -21,8 +27,10 @@
               Force Update
             </button>
           </div>
-          <p>Project search</p>
-          <a href="/user-search">User search</a>
+          <div class="links">
+            <a href="/" class="selected">Projects</a>
+            <a href="/user-search">Users</a>
+          </div>
           <div class="filters">
             <div class="search">
               <p>Sort</p>
@@ -46,11 +54,11 @@
               </select>
             </div>
             <div class="search">
-              <p>Author/Slack URL</p>
+              <p>Author / Slack URL</p>
               <input type="text" id="author-input" />
             </div>
             <div class="search">
-              <p>Name/desc</p>
+              <p>Name / Desc</p>
               <input type="text" id="name-input" />
             </div>
           </div>

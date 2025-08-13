@@ -4,7 +4,7 @@ const projectsDiv = document.getElementById("projects");
 const noProjectsText = document.getElementById("no-projects");
 const sortSelect = document.getElementById("project-sort");
 const authorInput = document.getElementById("author-input");
-const nameInput = document.getElementById("name-input");
+const nameOrDescInput = document.getElementById("name-input");
 const projectLimitOption = document.getElementById("project-limit");
 const requestUpdateBtn = document.getElementById("request-update-btn");
 const forceUpdateBtn = document.getElementById("force-update-btn");
@@ -25,29 +25,33 @@ function createProjectElem(project) {
   projectDiv.classList.add("project");
 
   const imgUrl = project.imageUrl;
-  const proxiedUrl = imgUrl.startsWith("http")
-    ? project.imageUrl
-    : "https://summer.hackclub.com" + project.imageUrl;
+  if (imgUrl) {
+    const proxiedUrl = imgUrl.startsWith("http")
+      ? imgUrl
+      : "https://summer.hackclub.com" + imgUrl;
 
-  API.proxyMedia(proxiedUrl)
-    .then((img) => {
-      if (img.type === "image") {
-        const imgElem = document.createElement("img");
-        imgElem.src = URL.createObjectURL(img.blob);
-        projectDiv.prepend(imgElem);
-      } else {
-        const videoElem = document.createElement("video");
-        videoElem.src = URL.createObjectURL(img.blob);
-        videoElem.muted = true;
-        videoElem.autoplay = true;
-        videoElem.loop = true;
-        videoElem.controls = true;
-        projectDiv.prepend(videoElem);
-      }
-    })
-    .catch(() => {
-      console.log("Image failed to load :/", project.imageUrl);
-    });
+    API.proxyMedia(proxiedUrl)
+      .then((img) => {
+        if (img.type === "image") {
+          const imgElem = document.createElement("img");
+          imgElem.classList.add('cover')
+          imgElem.src = URL.createObjectURL(img.blob);
+          projectDiv.prepend(imgElem);
+        } else {
+          const videoElem = document.createElement("video");
+          imgElem.classList.add('cover')
+          videoElem.src = URL.createObjectURL(img.blob);
+          videoElem.muted = true;
+          videoElem.autoplay = true;
+          videoElem.loop = true;
+          videoElem.controls = true;
+          projectDiv.prepend(videoElem);
+        }
+      })
+      .catch(() => {
+        console.log("Image failed to load :/", imgUrl);
+      });
+  }
 
   const rightElem = document.createElement("div");
   rightElem.classList.add("project-right");
@@ -60,21 +64,20 @@ function createProjectElem(project) {
   rightElem.appendChild(nameElem);
 
   const authorLinkElem = document.createElement("a");
-  authorLinkElem.href = "/user-search?user=" + project.authorName;
-  authorLinkElem.textContent = project.authorName;
+  if (project.authorName) {
+    authorLinkElem.href = "/user-search?user=" + project.authorSlackId;
+  }
+  authorLinkElem.textContent = project.authorName ?? "Unknown";
 
   const authorElem = document.createElement("p");
   authorElem.classList.add("author");
-  const coins = Math.floor((project.minutesSpent / 60) * 10);
 
   authorElem.append(
     "by ",
     authorLinkElem,
-    ` • ${project.minutesSpent} mins • ${
+    ` • ${Math.floor(project.secondsSpent / 60)} mins • ${
       project.devlogsCount
-    } devlogs • est. ${coins} coins • $${
-      Math.floor(coins * 0.03 * 100) / 100
-    }-$${Math.floor(coins * 0.29 * 100) / 100}`
+    } devlogs`
   );
   rightElem.appendChild(authorElem);
 
@@ -136,12 +139,12 @@ function createProjectElem(project) {
   }
 
   const linksP = document.createElement("p");
-  linksP.classList.add("links");
+  linksP.classList.add("project-links");
   if (linksArray.length > 0) {
     for (let i = 0; i < linksArray.length; i++) {
       linksP.append(linksArray[i]);
       if (i < linksArray.length - 1) {
-        linksP.append(" • ");
+        // linksP.append(" • ");
       }
     }
 
@@ -160,7 +163,7 @@ function createProjectElem(project) {
 API.getProjectCount().then((json) => {
   projectsCountElem.textContent = json.projects;
   devlogsElem.textContent = json.devlogs;
-  hoursCountElem.textContent = Math.floor((json.minutes / 60) * 100) / 100;
+  hoursCountElem.textContent = Math.floor((json.seconds / 60 / 60) * 100) / 100;
 });
 
 let currentTimeout;
@@ -173,12 +176,12 @@ async function updateProjects() {
     ? authorInput.value.split("/").pop()
     : authorInput.value;
 
-  const name = nameInput.value;
+  const nameOrDesc = nameOrDescInput.value;
   const limit = Number.parseInt(projectLimitOption.value);
 
   let projects;
   try {
-    projects = await API.getProjects(author, name, sort, limit);
+    projects = await API.getProjects(author, nameOrDesc, sort, limit);
   } catch (err) {
     alert(err.message);
     return;
@@ -203,6 +206,7 @@ async function updateProjects() {
 }
 
 async function onChange() {
+  updateURLParams();
   if (currentTimeout != null) {
     clearTimeout(currentTimeout);
   }
@@ -210,8 +214,39 @@ async function onChange() {
   currentTimeout = setTimeout(updateProjects, 200);
 }
 
+const query = new URLSearchParams(location.search);
+if (query.has("author")) {
+  let author = query.get("author");
+  authorInput.value = author;
+}
+
+if (query.has("nameOrDesc")) {
+  let nameOrDesc = query.get("nameOrDesc");
+  nameOrDescInput.value = nameOrDesc;
+}
+
+async function updateURLParams() {
+  if (authorInput.value) {
+    query.set("author", authorInput.value);
+  } else {
+    query.delete("author");
+  }
+
+  if (nameOrDescInput.value) {
+    query.set("nameOrDesc", nameOrDescInput.value);
+  } else {
+    query.delete("nameOrDesc");
+  }
+
+  const url = location.href;
+  const parsed = URL.parse(url);
+  parsed.search = query.toString();
+
+  window.history.replaceState({}, document.title, parsed.href);
+}
+
 authorInput.addEventListener("input", onChange);
-nameInput.addEventListener("input", onChange);
+nameOrDescInput.addEventListener("input", onChange);
 sortSelect.addEventListener("change", onChange);
 projectLimitOption.addEventListener("change", onChange);
 
@@ -254,11 +289,5 @@ setInterval(
   })(),
   1000
 );
-
-const query = new URLSearchParams(location.search);
-if (query.has("author")) {
-  let author = query.get("author");
-  authorInput.value = author;
-}
 
 updateProjects();

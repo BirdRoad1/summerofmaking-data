@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const projectsSchema = z.object({
+export const usersSchema = z.object({
   sort: z.enum(["mins", "devlogs", "url", "random"]).optional().default("mins"),
   limit: z
     .string()
@@ -11,5 +11,5 @@ export const projectsSchema = z.object({
       message: "must be between 1 and 200",
     }),
   author: z.string().nonempty().optional(),
-  nameOrDesc: z.string().nonempty().optional(),
+  nameOrSlackId: z.string().nonempty().optional(),
 });

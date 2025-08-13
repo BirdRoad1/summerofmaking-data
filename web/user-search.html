@@ -5,15 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SoM Data</title>
     <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="/assets/css/banner.css" />
     <link rel="stylesheet" href="/assets/css/user-search.css" />
   </head>
   <body>
+    <div class="love-banner">
+      <a href="https://summer.hackclub.com/projects/5942"
+        >Made with &lt;3 by Jose!</a
+      >
+    </div>
     <div class="content">
       <div class="top-section">
         <div class="top-left">
           <h1>SoM Data</h1>
-          <a href="/">Project search</a>
-          <p>User search</p>
+          <div class="links">
+            <a href="/">Projects</a>
+            <a href="/user-search" class="selected">Users</a>
+          </div>
           <div class="filters">
             <div class="search">
               <p>Sort</p>
@@ -36,7 +44,7 @@
               </select>
             </div>
             <div class="search">
-              <p>Name/Slack URL</p>
+              <p>Name / Slack URL</p>
               <input type="text" id="name-input" />
             </div>
           </div>

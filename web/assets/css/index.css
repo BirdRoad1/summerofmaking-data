@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
 .search {
   display: flex;
   align-items: center;
@@ -20,7 +22,22 @@ input {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  font-family: "Roboto", sans-serif;
+  font-family: "Montserrat", sans-serif;
+  width: 80vw;
+  margin: 0 auto;
+  background-color: rgb(13, 13, 13);
+}
+
+.links a, .project-links a {
+  color: white;
+  padding: 6px 12px;
+  background-color: rgb(28, 28, 28);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.links a.selected {
+  background-color: rgb(64, 30, 143);
 }
 
 .filters {
@@ -67,7 +84,7 @@ input {
 
 .project .name {
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
   color: rgb(240, 240, 240);
   text-decoration: none;
 }
@@ -81,10 +98,11 @@ input {
   color: rgb(122, 113, 223);
 }
 
-.project img,
-.project video {
+.project .cover {
   max-height: 200px;
   max-width: 400px;
+  border-radius: 4px;
+  background-color: white;
 }
 
 .title-container {
@@ -95,11 +113,11 @@ input {
 
 .request-update-btn {
   width: 150px;
-  height: 30px;
-  background-color: rgb(48, 40, 150);
+  height: 35px;
+  background-color: rgb(37, 30, 129);
   color: white;
   border: 0;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .request-update-btn:hover {
@@ -114,16 +132,27 @@ input {
 .top-left {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 }
 
 .top-right {
   background-color: rgb(35, 35, 35);
   margin-left: auto;
   width: 350px;
-  padding: 10px;
+  padding: 15px;
   border-radius: 4px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.state {
+  background-color: rgb(76, 92, 105);
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.project-links {
+  display: flex;
+  gap: 8px;
 }

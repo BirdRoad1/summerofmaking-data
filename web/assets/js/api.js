@@ -1,4 +1,4 @@
-async function getProjects(author, name, sort, limit) {
+async function getProjects(author, nameOrDesc, sort, limit) {
   const params = new URLSearchParams({
     sort,
     limit,
@@ -8,8 +8,8 @@ async function getProjects(author, name, sort, limit) {
     params.append("author", author);
   }
 
-  if (name) {
-    params.append("name", name);
+  if (nameOrDesc) {
+    params.append("nameOrDesc", nameOrDesc);
   }
 
   let res = await fetch("/api/projects?" + params.toString());
@@ -29,14 +29,14 @@ async function getProjects(author, name, sort, limit) {
   return json;
 }
 
-async function getUsers(name, sort, limit) {
+async function getUsers(nameOrSlackId, sort, limit) {
   const params = new URLSearchParams({
     sort,
     limit,
   });
 
-  if (name) {
-    params.append("name", name);
+  if (nameOrSlackId) {
+    params.append("nameOrSlackId", nameOrSlackId);
   }
 
   let res = await fetch("/api/users?" + params.toString());

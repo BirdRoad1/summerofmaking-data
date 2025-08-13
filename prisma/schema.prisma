@@ -18,7 +18,7 @@ model Project {
   id               Int       @id @default(autoincrement())
   projectId        Int       @unique @map("project_id")
   name             String
-  imageUrl         String    @map("image_url")
+  imageUrl         String?    @map("image_url")
   description      String
   category         String?
   readmeLink       String?   @map("readme_link")
@@ -26,30 +26,50 @@ model Project {
   repoLink         String?   @map("repo_link")
   projectCreatedAt DateTime? @map("project_created_at")
   projectUpdatedAt DateTime? @map("project_updated_at")
-  minutesSpent     Int       @map("minutes_spent")
+  secondsSpent     Int       @map("seconds_spent")
   devlogsCount     Int       @map("devlogs_count")
+  shipped          Boolean   @default(false) @map("is_shipped")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
-  User             User     @relation(fields: [userId], references: [id])
-  userId           Int      @map("user_id")
+  User             User      @relation(fields: [slackId], references: [slackId])
+  slackId          String    @map("slack_id")
 
   @@map("project")
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  name     String?
-  slackId  String?    @unique @map("slack_id")
-  projects Project[]
+  id          Int       @id @default(autoincrement())
+  userId      Int?       @unique @map("user_id")
+  slackId     String    @unique @map("slack_id")
+  displayName String?   @map("display_name")
+  bio         String?
+  avatar      String?
+  projects    Project[]
+  badges      Badge[]
 
   @@map("user")
 }
 
+model Badge {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  text   String
+  icon   String
+  User   User?  @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
 model ScrapedPage {
   id          Int      @id @default(autoincrement())
+  endpoint    String
   pageNumber  Int      @map("page_number")
   lastScraped DateTime @default(now()) @map("last_scraped")
   valid       Boolean  @default(true)
 
   @@map("scraped_page")
 }
+
+// model CoinUpdate {
+//   id      Int
+//   slackId String @unique
+// }

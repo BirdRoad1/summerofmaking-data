@@ -1,0 +1,17 @@
+.love-banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 42px;
+  background-color: rgb(27, 27, 27);
+  font-family: "Roboto", sans-serif;
+  width: 80vw;
+  margin: 0 auto;
+  margin-top: 10px;
+  border-radius: 8px 8px 0 0;
+}
+
+.love-banner a {
+  color: white;
+  text-decoration: none;
+}

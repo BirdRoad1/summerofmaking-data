@@ -1,10 +1,10 @@
 import express from "express";
 import { Prisma } from "../../../.generated/client.js";
-import { projectsSchema } from "../../../schema/projects-schema.js";
 import { db } from "../../../config/db.js";
+import { usersSchema } from "../../../schema/users-schema.js";
 
 const getUsers = async (req: express.Request, res: express.Response) => {
-  const parsed = projectsSchema.safeParse(req.query);
+  const parsed = usersSchema.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({
       error: parsed.error,
@@ -15,9 +15,9 @@ const getUsers = async (req: express.Request, res: express.Response) => {
   const query = parsed.data;
 
   let conditions = [];
-  if (query.name) {
+  if (query.nameOrSlackId) {
     conditions.push(
-      Prisma.sql`LOWER("user"."name") LIKE '%' || LOWER(${query.name}) || '%'`
+      Prisma.sql`(LOWER("user"."display_name") LIKE '%' || LOWER(${query.nameOrSlackId}) || '%' OR LOWER("user"."slack_id") LIKE '%' || LOWER(${query.nameOrSlackId}) || '%')`
     );
   }
 
@@ -25,7 +25,7 @@ const getUsers = async (req: express.Request, res: express.Response) => {
     query.sort === "devlogs"
       ? Prisma.sql`ORDER BY "devlogs"`
       : query.sort === "mins"
-      ? Prisma.sql`ORDER BY "minutes"`
+      ? Prisma.sql`ORDER BY "seconds"`
       : Prisma.sql`ORDER BY RANDOM()`;
 
   const limitClause = Prisma.sql`LIMIT ${query.limit}`;
@@ -37,13 +37,19 @@ const getUsers = async (req: express.Request, res: express.Response) => {
 
   const sql = Prisma.sql`
     SELECT
-      "user"."name" as "name",
+      "user"."display_name" as "name",
       "user"."slack_id" as "slackId",
-      SUM("project"."minutes_spent") as "minutes",
-      SUM("project"."devlogs_count") as "devlogs"
-  FROM
-      "user"
-      LEFT JOIN "project" ON "project"."user_id" = "user"."id" ${whereClause} GROUP BY "user"."name", "user"."slack_id" ${orderClause} DESC ${limitClause}`;
+      "user"."bio" as "bio",
+      "user"."avatar" as avatar,
+      COALESCE(SUM("project"."seconds_spent"),0) as "seconds",
+      COALESCE(SUM("project"."devlogs_count"), 0) as "devlogs"
+    FROM "user"
+    LEFT JOIN "project"
+      ON "project"."slack_id" = "user"."slack_id"
+    ${whereClause}
+    GROUP BY "user"."display_name", "user"."slack_id", "user"."bio", "user"."avatar"
+    ${orderClause} DESC
+    ${limitClause}`;
 
   const result = await db.$queryRaw(sql);
 
@@ -77,7 +83,7 @@ const getUser = async (req: express.Request, res: express.Response) => {
       slackId,
     },
     select: {
-      name: true,
+      displayName: true,
       slackId: true,
     },
   });

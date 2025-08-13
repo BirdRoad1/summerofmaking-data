@@ -18,13 +18,13 @@ const getProjects = async (req: express.Request, res: express.Response) => {
 
   if (query.author) {
     conditions.push(
-      Prisma.sql`LOWER("user"."name") LIKE '%' || LOWER(${query.author}) || '%' OR LOWER("user"."slack_id") LIKE '%' || LOWER(${query.author}) || '%'`
+      Prisma.sql`(LOWER("user"."display_name") LIKE '%' || LOWER(${query.author}) || '%' OR LOWER("user"."slack_id") LIKE '%' || LOWER(${query.author}) || '%')`
     );
   }
 
-  if (query.name) {
+  if (query.nameOrDesc) {
     conditions.push(
-      Prisma.sql`LOWER("project"."name") LIKE '%' || LOWER(${query.name}) || '%'`
+      Prisma.sql`(LOWER("project"."name") LIKE '%' || LOWER(${query.nameOrDesc}) || '%' OR LOWER("project"."description") LIKE '%' || LOWER(${query.nameOrDesc}) || '%')`
     );
   }
 
@@ -32,7 +32,7 @@ const getProjects = async (req: express.Request, res: express.Response) => {
     query.sort === "devlogs"
       ? Prisma.sql`ORDER BY project.devlogs_count`
       : query.sort === "mins"
-      ? Prisma.sql`ORDER BY project.minutes_spent`
+      ? Prisma.sql`ORDER BY project.seconds_spent`
       : query.sort === "url"
       ? Prisma.sql`ORDER BY project.project_id`
       : Prisma.sql`ORDER BY RANDOM()`;
@@ -55,13 +55,13 @@ const getProjects = async (req: express.Request, res: express.Response) => {
       project.repo_link as "repoLink",
       project.project_created_at as "projectCreatedAt",
       project.project_updated_at as "projectUpdatedAt",
-      project.minutes_spent as "minutesSpent",
+      project.seconds_spent as "secondsSpent",
       project.devlogs_count as "devlogsCount",
-      "user"."name" as "authorName",
+      "user"."display_name" as "authorName",
       "user"."slack_id" as "authorSlackId"
   FROM
       project
-      LEFT JOIN "user" ON "project"."user_id" = "user"."id" ${whereClause} ${orderClause} DESC ${limitClause}`;
+      LEFT JOIN "user" ON "project"."slack_id" = "user"."slack_id" ${whereClause} ${orderClause} DESC ${limitClause}`;
 
   const result = await db.$queryRaw(sql);
 
@@ -71,7 +71,7 @@ const getProjects = async (req: express.Request, res: express.Response) => {
 const getCount = async (req: express.Request, res: express.Response) => {
   const aggregate = await db.project.aggregate({
     _sum: {
-      minutesSpent: true,
+      secondsSpent: true,
       devlogsCount: true,
     },
     _count: {
@@ -81,7 +81,7 @@ const getCount = async (req: express.Request, res: express.Response) => {
   res.json({
     devlogs: aggregate._sum.devlogsCount,
     projects: aggregate._count._all,
-    minutes: aggregate._sum.minutesSpent,
+    seconds: aggregate._sum.secondsSpent,
   });
 };
 
@@ -108,11 +108,11 @@ const getProject = async (req: express.Request, res: express.Response) => {
       repoLink: true,
       projectCreatedAt: true,
       projectUpdatedAt: true,
-      minutesSpent: true,
+      secondsSpent: true,
       devlogsCount: true,
       createdAt: true,
       updatedAt: true,
-      userId: true,
+      slackId: true,
     },
   });
 
